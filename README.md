@@ -1,1 +1,3 @@
 # netProtocols
+
+- python main.py
