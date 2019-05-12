@@ -28,8 +28,8 @@ class Question:
 class ResourceRecord:
     def __init__(self, name=None, tp=0, cl=0, ttl=0, data=None):
         self.name = name
-        self.type = tp
-        self.class_ = cl
+        self.type = tp  # A, NS
+        self.class_ = cl    # IN
         self.ttl = ttl
         self.data = data
 

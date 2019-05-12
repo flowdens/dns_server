@@ -1,5 +1,5 @@
 import sys
-from server.DnsCacheManager import DnsServer
+from server.DnsServer import DnsServer
 
 if __name__ == '__main__':
     server = DnsServer()
@@ -9,6 +9,6 @@ if __name__ == '__main__':
         print('Server shutdown')
     finally:
         print("Caching process")
-        server.cache.save_records()
+
         server.stop()
         sys.exit(0)

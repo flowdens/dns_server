@@ -1,1 +1,8 @@
-[]
+{"name": "e1.ru.", "type": 1, "class_": 1, "ttl": 300, "data": "212.193.163.6", "cached_at": "2019-05-13 01:30:24.090514", "__RR__": true}
+{"name": "e1.ru.", "type": 1, "class_": 1, "ttl": 300, "data": "212.193.163.7", "cached_at": "2019-05-13 01:30:24.090514", "__RR__": true}
+{"name": "e1.ru.", "type": 2, "class_": 1, "ttl": 300, "data": "ns2.ngs.ru.", "cached_at": "2019-05-13 01:30:24.090514", "__RR__": true}
+{"name": "e1.ru.", "type": 2, "class_": 1, "ttl": 300, "data": "ns.ngs.ru.", "cached_at": "2019-05-13 01:30:24.090514", "__RR__": true}
+{"name": "e1.ru.", "type": 2, "class_": 1, "ttl": 300, "data": "ns1.e1.ru.", "cached_at": "2019-05-13 01:30:24.090514", "__RR__": true}
+{"name": "e1.ru.", "type": 2, "class_": 1, "ttl": 300, "data": "ns2.e1.ru.", "cached_at": "2019-05-13 01:30:24.090514", "__RR__": true}
+{"name": "ns1.e1.ru.", "type": 1, "class_": 1, "ttl": 300, "data": "212.193.163.6", "cached_at": "2019-05-13 01:30:24.090514", "__RR__": true}
+{"name": "ns2.e1.ru.", "type": 1, "class_": 1, "ttl": 300, "data": "212.193.163.7", "cached_at": "2019-05-13 01:30:24.090514", "__RR__": true}

@@ -2,39 +2,18 @@ from records.DnsMesssage import DnsMessage
 from records.config import types
 import selectors
 import socket
-import json
 from server.Server import Server, CallbackData
-
-
-class Cache:
-    buffer = dict()
-    file = "cache.json"
-
-    def save_records(self):
-        with open(self.file, "w") as write_file:
-            json.dump(self.buffer, write_file)
-
-    def load_records(self):
-        with open(self.file, "r") as read_file:
-            self.buffer = json.load(read_file)
-
-    def find_answers(self, question):
-        # get all matching answers in list
-        pass
-
-    def add_answer(self, record):
-        pass
+from server.Cache import CacheManager
 
 
 class DnsServer(Server):
     def __init__(self):
         super().__init__(self.handle_packet)
-        self.cache = Cache()
-        self.forwarder_ip = '8.8.8.8'
+        self.cache = CacheManager().load_records()
+        self.forwarder_ip = '212.193.163.6'
         self.forwarder_query_id = 0
         self.FORWARDER_ADDR = (self.forwarder_ip, self.DNS_PORT)
         self.cached_answers_by_query = {}
-        self.cache.load_records()
 
     def handle_packet(self, bts, addr):
         possible_parse, msg = DnsMessage.try_parse(bts)
@@ -67,9 +46,8 @@ class DnsServer(Server):
         return response
 
     def _handle_query_message(self, msg, client_addr):
-        answers_to_send, questions_to_lookup = [], self._filter_supported_records(msg.questions)
-        # self._get_answers_from_cache(
-        #    self._filter_supported_records(msg.questions))
+        answers_to_send, questions_to_lookup = self._get_answers_from_cache(
+            self._filter_supported_records(msg.questions))
 
         if len(questions_to_lookup) == 0 and len(answers_to_send) == 0:
             print("No supported question types to look up")
@@ -80,7 +58,7 @@ class DnsServer(Server):
 
         if len(questions_to_lookup) == 0:
             print("Got answers from cache")
-            self._respond_to_client(msg.id, client_addr, answers_to_send)
+            self._respond_to_client(msg.header.id, client_addr, answers_to_send)
         else:
             self.cached_answers_by_query[(client_addr, msg.header.id)] = answers_to_send
             self._query_forwarder(msg.header.id, client_addr, questions_to_lookup)
@@ -124,7 +102,7 @@ class DnsServer(Server):
 
     def _finish_query_to_forwarder(self, client_socket, client_query_id, client_addr):
         print(f"Get response from {self.FORWARDER_ADDR}")
-        byte_response, _ = client_socket.recvfrom(1024)
+        byte_response, _ = client_socket.recvfrom(512)
         possible_parse, parsed_response = DnsMessage.try_parse(byte_response)
         self.selectors.unregister(client_socket)
         client_socket.close()
@@ -136,17 +114,19 @@ class DnsServer(Server):
         answers_from_cache = self.cached_answers_by_query[(client_addr, client_query_id)]
         del self.cached_answers_by_query[(client_addr, client_query_id)]
         answers_to_send = answers_from_cache + parsed_response.answers
-        print(f'Got {len(parsed_response.answers)} answers from forwarder')
+        """print(f'Got {len(parsed_response.answers)} answers from forwarder')
         print(f'Got {len(parsed_response.authorities)} authorities from forwarder')
-        print(f'Got {len(parsed_response.additions)} additions from forwarder')
+        print(f'Got {len(parsed_response.additions)} additions from forwarder')"""
+        parsed_response.str_repr()
 
-        """records_to_cache = self._filter_supported_records(
+
+        records_to_cache = self._filter_supported_records(
             parsed_response.answers +
             parsed_response.authorities +
             parsed_response.additions)
 
         for record in records_to_cache:
-            self.cache.add_answer(record) """
+            self.cache.add_answer(record)
 
         self._respond_to_client(client_query_id, client_addr, answers_to_send)
 
@@ -155,3 +135,7 @@ class DnsServer(Server):
         print()
         dns_response = self.construct_response_from_answers(client_id, answers)
         self.server_sock.sendto(dns_response.to_bytes(), client_addr)
+
+    def stop(self):
+        CacheManager().save_records(self.cache)
+        super().stop()
