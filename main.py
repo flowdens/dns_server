@@ -1,15 +1,14 @@
 import sys
-from server.UdpServer import Server
-
+from server.DnsCacheManager import DnsServer
 
 if __name__ == '__main__':
-    server = Server(print)
-
+    server = DnsServer()
     try:
         server.run()
     except KeyboardInterrupt:
-        print("Caching")
         print('Server shutdown')
-        # save cache
+    finally:
+        print("Caching process")
+        server.cache.save_records()
         server.stop()
         sys.exit(0)

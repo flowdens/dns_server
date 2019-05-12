@@ -1,6 +1,6 @@
 import struct
-from dns.config import types
-from dns.general_func import encode_name, decode_name, unpack_16b
+from records.config import types
+from records.general_func import encode_name, decode_name, unpack_16b
 
 
 class Question:
@@ -13,7 +13,7 @@ class Question:
         return encode_name(self.name) + struct.pack('!HH', self.type, self.class_)
 
     @staticmethod
-    def decode_questions(bts, offset, qdcount):
+    def parse_questions(bts, offset, qdcount):
         questions = []
         for i in range(qdcount):
             offset, name = decode_name(bts, offset)
@@ -34,15 +34,15 @@ class ResourceRecord:
         self.data = data
 
     @staticmethod
-    def decode_answers(bts, offset, count):
+    def parse_answers(bts, offset, count):
         answers = []
         for i in range(count):
-            offset, answer = ResourceRecord._decode_answer(bts, offset)
+            offset, answer = ResourceRecord._parse_answer(bts, offset)
             answers.append(answer)
         return offset, answers
 
     @staticmethod
-    def _decode_answer(bts, offset):
+    def _parse_answer(bts, offset):
         # I = 32b
         offset, name = decode_name(bts, offset)
         tp = unpack_16b(bts[offset:offset + 2])
@@ -79,18 +79,18 @@ class ResourceRecord:
                  struct.pack('!HHI', self.type, self.class_, self.ttl)
 
         if self.type == types['A']:
-            encoded_data = ResourceRecord._encode_a_data(self.data)
+            encoded_data = ResourceRecord._a_data_to_bytes(self.data)
         elif self.type == types['NS']:
-            encoded_data = ResourceRecord._encode_ns_data(self.data)
+            encoded_data = ResourceRecord._ns_data_to_bytes(self.data)
 
         r_data_len = len(encoded_data)
         return prefix + struct.pack('!H', r_data_len) + encoded_data
 
     @staticmethod
-    def _encode_a_data(ip):
+    def _a_data_to_bytes(ip):
         ip_bytes = [struct.pack('!B', int(ip_part)) for ip_part in ip.split('.')]
         return b''.join(ip_bytes)
 
     @staticmethod
-    def _encode_ns_data(domain_name):
+    def _ns_data_to_bytes(domain_name):
         return encode_name(domain_name)
